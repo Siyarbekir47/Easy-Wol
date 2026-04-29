@@ -1,7 +1,7 @@
 services:
   easy-wol:
-    image: ghcr.io/siyarbekir47/easy-wol:latest
-    container_name: easy-wol
+    build: .
+    container_name: easy-wol-dev
     restart: unless-stopped
     network_mode: host
     environment:

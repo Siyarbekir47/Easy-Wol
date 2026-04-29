@@ -1,15 +1,14 @@
 services:
   easy-wol:
-    build: .
+    image: ghcr.io/siyarbekir47/easy-wol:latest
     container_name: easy-wol
     restart: unless-stopped
     network_mode: host
     environment:
-      PORT: "8080"
-      ADMIN_PASSWORD: "change-this-password"
-      DB_PATH: "/app/data/easy-wol.sqlite"
-      SSH_KEY_DIR: "/app/ssh"
+      PORT: "${PORT:-8080}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-change-this-password}"
+      DB_PATH: "${DB_PATH:-/app/data/easy-wol.sqlite}"
+      SSH_KEY_DIR: "${SSH_KEY_DIR:-/app/ssh}"
     volumes:
       - ./data:/app/data
-      # Optional: mount a directory containing one or more private SSH keys.
-      # - ~/.ssh:/app/ssh:ro
+      - ./ssh-keys:/app/ssh:ro
