@@ -215,7 +215,7 @@ export default function App() {
     return (
       <main className="login-shell">
         <section className="login-card">
-          <div className="brand-mark">EW</div>
+          <img className="brand-mark" src="/easy-wol-icon.svg" alt="Easy-WoL" />
           <p className="eyebrow">Network Operations Console</p>
           <h1>Easy-WoL</h1>
           <p className="muted">Wake, schedule, and power-manage devices across local networks and SSH relay sites.</p>
@@ -232,7 +232,7 @@ export default function App() {
   return (
     <main className="ops-shell">
       <aside className="rail">
-        <div className="rail-logo">EW</div>
+        <img className="rail-logo" src="/easy-wol-icon.svg" alt="Easy-WoL" />
         <button onClick={() => setSelection({ kind: 'new-site' })}>New site</button>
         <button onClick={() => setSelection({ kind: 'new-device' })}>New device</button>
         <button onClick={() => setSelection({ kind: 'new-group' })}>New group</button>

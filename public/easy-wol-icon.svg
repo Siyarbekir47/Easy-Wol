@@ -1,0 +1,54 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Easy-WoL icon</title>
+  <desc id="desc">A modern Wake-on-LAN power icon with network signal rings and connected device nodes.</desc>
+  <defs>
+    <linearGradient id="bg" x1="72" y1="36" x2="448" y2="478" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#102A43"/>
+      <stop offset="0.47" stop-color="#0B1726"/>
+      <stop offset="1" stop-color="#0E3B35"/>
+    </linearGradient>
+    <linearGradient id="wake" x1="156" y1="116" x2="367" y2="387" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8CF7C8"/>
+      <stop offset="0.48" stop-color="#2EE6A6"/>
+      <stop offset="1" stop-color="#26B7FF"/>
+    </linearGradient>
+    <linearGradient id="node" x1="124" y1="118" x2="388" y2="395" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7D36B"/>
+      <stop offset="1" stop-color="#2EE6A6"/>
+    </linearGradient>
+    <filter id="softGlow" x="68" y="72" width="376" height="376" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feGaussianBlur in="BackgroundImageFix" stdDeviation="0"/>
+      <feDropShadow dx="0" dy="18" stdDeviation="34" flood-color="#2EE6A6" flood-opacity="0.28"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="18" flood-color="#26B7FF" flood-opacity="0.22"/>
+    </filter>
+    <filter id="nodeGlow" x="82" y="78" width="348" height="348" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#2EE6A6" flood-opacity="0.42"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <path d="M91 344C64 252 106 151 193 112C274 76 378 98 426 177" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="34" stroke-linecap="round"/>
+  <path d="M421 166C467 250 437 360 357 410C288 453 194 444 134 386" stroke="#2EE6A6" stroke-opacity="0.08" stroke-width="42" stroke-linecap="round"/>
+
+  <g filter="url(#nodeGlow)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M164 335L215 288M348 176L297 224M164 176L215 224M348 335L297 288" stroke="url(#node)" stroke-width="14" stroke-opacity="0.82"/>
+    <path d="M256 139V202" stroke="#8CF7C8" stroke-width="18"/>
+  </g>
+
+  <g filter="url(#softGlow)">
+    <path d="M189 213C168 231 155 258 155 288C155 344 200 389 256 389C312 389 357 344 357 288C357 258 344 231 323 213" stroke="url(#wake)" stroke-width="35" stroke-linecap="round"/>
+    <path d="M256 129V253" stroke="url(#wake)" stroke-width="38" stroke-linecap="round"/>
+  </g>
+
+  <g filter="url(#nodeGlow)">
+    <circle cx="151" cy="164" r="31" fill="#0B1726" stroke="#F7D36B" stroke-width="13"/>
+    <circle cx="361" cy="164" r="31" fill="#0B1726" stroke="#26B7FF" stroke-width="13"/>
+    <circle cx="151" cy="348" r="31" fill="#0B1726" stroke="#26B7FF" stroke-width="13"/>
+    <circle cx="361" cy="348" r="31" fill="#0B1726" stroke="#2EE6A6" stroke-width="13"/>
+    <circle cx="256" cy="288" r="19" fill="#F7D36B"/>
+  </g>
+
+  <path d="M108 411C145 446 197 468 256 468C315 468 367 446 404 411" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="16" stroke-linecap="round"/>
+  <path d="M123 101C158 66 205 46 256 46C307 46 354 66 389 101" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="16" stroke-linecap="round"/>
+</svg>
