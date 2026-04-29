@@ -14,6 +14,7 @@ It is designed for home labs, small offices, and multi-site setups where some de
 - Manage devices, groups, schedules, and wake history.
 - Store all app data in a local SQLite database.
 - Run as a Docker container.
+<img width="1893" height="946" alt="easywol_example" src="https://github.com/user-attachments/assets/36f70a0e-35f7-4fb1-ae43-0473c080e70e" />
 
 ## Quick Start With Docker Compose
 
