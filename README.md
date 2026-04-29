@@ -34,6 +34,30 @@ docker compose up -d --build
 
 `network_mode: host` is intentional. Wake-on-LAN broadcasts from Docker bridge networks can be unreliable depending on the host and network setup.
 
+## GHCR image deployment
+
+The repository publishes Docker images to GitHub Container Registry:
+
+```text
+ghcr.io/siyarbekir47/easy-wol:latest
+```
+
+Use the image-based Compose file on your server:
+
+```bash
+docker compose -f docker-compose.ghcr.yml pull
+docker compose -f docker-compose.ghcr.yml up -d
+```
+
+To update later:
+
+```bash
+docker compose -f docker-compose.ghcr.yml pull
+docker compose -f docker-compose.ghcr.yml up -d
+```
+
+The `latest` tag is built automatically by GitHub Actions whenever `main` is pushed. Version tags like `v1.0.0` also publish matching image tags.
+
 ## SSH relay setup
 
 A remote site needs a reachable Linux/Unix host in the target network. Install a Wake-on-LAN tool on that relay host:
