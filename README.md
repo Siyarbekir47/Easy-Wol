@@ -10,6 +10,7 @@ It is designed for home labs, small offices, and multi-site setups where some de
 - Manage multiple sites/networks.
 - Use local Wake-on-LAN for devices in the server's network.
 - Use an SSH relay host for devices in remote networks.
+- Reboot or shut down devices over direct SSH, even when they belong to a local site.
 - Manage devices, groups, schedules, and wake history.
 - Store all app data in a local SQLite database.
 - Run as a Docker container.
@@ -152,6 +153,16 @@ Wake behavior:
 Easy-WoL container -> UDP Magic Packet -> local broadcast address
 ```
 
+Shutdown and reboot for devices in a local site require device-level power settings. Configure the device with:
+
+- OS type: `Windows`, `Linux`, `macOS`, or `Other`
+- Power method: `Direct SSH to device`
+- SSH user
+- SSH private key
+- Optional custom shutdown/reboot commands
+
+This lets a local Windows or Linux device receive power commands directly over SSH while Wake-on-LAN still uses the local broadcast network.
+
 ### SSH Relay Site
 
 Use this when the target device is in another network.
@@ -242,12 +253,26 @@ Available placeholders:
 | `{broadcast}` | Site broadcast address |
 | `{name}` | Device name |
 
-Shutdown and reboot are only available for SSH relay sites because Easy-WoL needs a trusted host that can execute those commands in the target network.
+Shutdown and reboot need an authenticated command channel. Easy-WoL supports two models:
+
+- SSH relay site: commands run on the relay host and can target devices in that remote network.
+- Direct SSH device power: commands run directly on the target device, including devices in a local site.
+
+Default direct SSH commands by OS:
+
+| OS | Shutdown | Reboot |
+| --- | --- | --- |
+| Windows | `shutdown /s /t 0` | `shutdown /r /t 0` |
+| Linux | `sudo shutdown -h now` | `sudo reboot` |
+| macOS | `sudo shutdown -h now` | `sudo reboot` |
+| Other | custom command required | custom command required |
 
 ## Features
 
 - Site management
 - Device management
+- OS-aware device power management
+- Direct SSH power actions for local devices
 - Wake individual devices
 - Wake groups of devices
 - Shutdown and reboot through SSH relay command templates

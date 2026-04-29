@@ -4,6 +4,8 @@ import { assertIpv4, normalizeMacAddress, parsePort } from './validation.js';
 
 export type SiteType = 'local' | 'ssh';
 export type PowerAction = 'wake' | 'shutdown' | 'reboot';
+export type DeviceOsType = 'windows' | 'linux' | 'macos' | 'other';
+export type DevicePowerMethod = 'none' | 'ssh';
 
 export interface SiteInput {
   name: string;
@@ -31,6 +33,13 @@ export interface DeviceInput {
   ipAddress: string;
   siteId: string;
   note?: string | null;
+  osType?: DeviceOsType | null;
+  powerMethod?: DevicePowerMethod | null;
+  powerSshUser?: string | null;
+  powerSshKeyPath?: string | null;
+  powerSshPort?: number | string | null;
+  powerShutdownCommand?: string | null;
+  powerRebootCommand?: string | null;
 }
 
 export interface Device {
@@ -41,6 +50,13 @@ export interface Device {
   siteId: string;
   siteName?: string;
   note: string;
+  osType: DeviceOsType;
+  powerMethod: DevicePowerMethod;
+  powerSshUser: string | null;
+  powerSshKeyPath: string | null;
+  powerSshPort: number | null;
+  powerShutdownCommand: string | null;
+  powerRebootCommand: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -121,6 +137,13 @@ export function createDatabase(filename: string) {
       ip_address TEXT NOT NULL,
       site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
       note TEXT NOT NULL DEFAULT '',
+      os_type TEXT NOT NULL DEFAULT 'other',
+      power_method TEXT NOT NULL DEFAULT 'none',
+      power_ssh_user TEXT,
+      power_ssh_key_path TEXT,
+      power_ssh_port INTEGER,
+      power_shutdown_command TEXT,
+      power_reboot_command TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
@@ -163,7 +186,14 @@ export function createDatabase(filename: string) {
 
   for (const statement of [
     'ALTER TABLE sites ADD COLUMN shutdown_command TEXT',
-    'ALTER TABLE sites ADD COLUMN reboot_command TEXT'
+    'ALTER TABLE sites ADD COLUMN reboot_command TEXT',
+    "ALTER TABLE devices ADD COLUMN os_type TEXT NOT NULL DEFAULT 'other'",
+    "ALTER TABLE devices ADD COLUMN power_method TEXT NOT NULL DEFAULT 'none'",
+    'ALTER TABLE devices ADD COLUMN power_ssh_user TEXT',
+    'ALTER TABLE devices ADD COLUMN power_ssh_key_path TEXT',
+    'ALTER TABLE devices ADD COLUMN power_ssh_port INTEGER',
+    'ALTER TABLE devices ADD COLUMN power_shutdown_command TEXT',
+    'ALTER TABLE devices ADD COLUMN power_reboot_command TEXT'
   ]) {
     try { sqlite.exec(statement); } catch { /* existing database already has the column */ }
   }
@@ -195,12 +225,23 @@ export function createDatabase(filename: string) {
   function normalizeDevice(input: DeviceInput) {
     const name = input.name.trim();
     if (!name) throw new Error('Device name is required');
+    const osType = input.osType || 'other';
+    const powerMethod = input.powerMethod || 'none';
+    if (!['windows', 'linux', 'macos', 'other'].includes(osType)) throw new Error('Invalid device OS');
+    if (!['none', 'ssh'].includes(powerMethod)) throw new Error('Invalid device power method');
     return {
       name,
       macAddress: normalizeMacAddress(input.macAddress),
       ipAddress: assertIpv4(input.ipAddress, 'device IP address'),
       siteId: input.siteId,
-      note: input.note?.trim() ?? ''
+      note: input.note?.trim() ?? '',
+      osType,
+      powerMethod,
+      powerSshUser: input.powerSshUser?.trim() || null,
+      powerSshKeyPath: input.powerSshKeyPath?.trim() || null,
+      powerSshPort: input.powerSshPort === undefined || input.powerSshPort === null || input.powerSshPort === '' ? null : parsePort(input.powerSshPort),
+      powerShutdownCommand: input.powerShutdownCommand?.trim() || null,
+      powerRebootCommand: input.powerRebootCommand?.trim() || null
     };
   }
 
@@ -248,6 +289,13 @@ export function createDatabase(filename: string) {
       siteId: row.site_id,
       siteName: row.site_name,
       note: row.note,
+      osType: row.os_type,
+      powerMethod: row.power_method,
+      powerSshUser: row.power_ssh_user,
+      powerSshKeyPath: row.power_ssh_key_path,
+      powerSshPort: row.power_ssh_port,
+      powerShutdownCommand: row.power_shutdown_command,
+      powerRebootCommand: row.power_reboot_command,
       createdAt: row.created_at,
       updatedAt: row.updated_at
     };
@@ -297,7 +345,7 @@ export function createDatabase(filename: string) {
       const device = normalizeDevice(input);
       const id = randomUUID();
       const timestamp = now();
-      sqlite.prepare(`INSERT INTO devices VALUES (@id, @name, @macAddress, @ipAddress, @siteId, @note, @createdAt, @updatedAt)`).run({ id, ...device, createdAt: timestamp, updatedAt: timestamp });
+      sqlite.prepare(`INSERT INTO devices (id, name, mac_address, ip_address, site_id, note, os_type, power_method, power_ssh_user, power_ssh_key_path, power_ssh_port, power_shutdown_command, power_reboot_command, created_at, updated_at) VALUES (@id, @name, @macAddress, @ipAddress, @siteId, @note, @osType, @powerMethod, @powerSshUser, @powerSshKeyPath, @powerSshPort, @powerShutdownCommand, @powerRebootCommand, @createdAt, @updatedAt)`).run({ id, ...device, createdAt: timestamp, updatedAt: timestamp });
       return api.getDevice(id)!;
     },
     listDevices(): Device[] {
@@ -309,7 +357,7 @@ export function createDatabase(filename: string) {
     },
     updateDevice(id: string, input: DeviceInput): Device {
       const device = normalizeDevice(input);
-      sqlite.prepare(`UPDATE devices SET name=@name, mac_address=@macAddress, ip_address=@ipAddress, site_id=@siteId, note=@note, updated_at=@updatedAt WHERE id=@id`).run({ id, ...device, updatedAt: now() });
+      sqlite.prepare(`UPDATE devices SET name=@name, mac_address=@macAddress, ip_address=@ipAddress, site_id=@siteId, note=@note, os_type=@osType, power_method=@powerMethod, power_ssh_user=@powerSshUser, power_ssh_key_path=@powerSshKeyPath, power_ssh_port=@powerSshPort, power_shutdown_command=@powerShutdownCommand, power_reboot_command=@powerRebootCommand, updated_at=@updatedAt WHERE id=@id`).run({ id, ...device, updatedAt: now() });
       const updated = api.getDevice(id);
       if (!updated) throw new Error('Device not found');
       return updated;
@@ -413,7 +461,23 @@ export function createDatabase(filename: string) {
         sqlite.prepare('DELETE FROM devices').run();
         sqlite.prepare('DELETE FROM sites').run();
         for (const site of backup.sites) sqlite.prepare(`INSERT INTO sites (id, name, type, broadcast_address, ssh_host, ssh_port, ssh_user, ssh_key_path, remote_command, shutdown_command, reboot_command, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(site.id, site.name, site.type, site.broadcastAddress, site.sshHost, site.sshPort, site.sshUser, site.sshKeyPath, site.remoteCommand, site.shutdownCommand, site.rebootCommand, site.createdAt, site.updatedAt);
-        for (const device of backup.devices) sqlite.prepare('INSERT INTO devices VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(device.id, device.name, normalizeMacAddress(device.macAddress), device.ipAddress, device.siteId, device.note || '', device.createdAt, device.updatedAt);
+        for (const device of backup.devices) sqlite.prepare(`INSERT INTO devices (id, name, mac_address, ip_address, site_id, note, os_type, power_method, power_ssh_user, power_ssh_key_path, power_ssh_port, power_shutdown_command, power_reboot_command, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+          device.id,
+          device.name,
+          normalizeMacAddress(device.macAddress),
+          device.ipAddress,
+          device.siteId,
+          device.note || '',
+          device.osType || 'other',
+          device.powerMethod || 'none',
+          device.powerSshUser || null,
+          device.powerSshKeyPath || null,
+          device.powerSshPort || null,
+          device.powerShutdownCommand || null,
+          device.powerRebootCommand || null,
+          device.createdAt,
+          device.updatedAt
+        );
         for (const group of backup.groups) {
           sqlite.prepare('INSERT INTO groups VALUES (?, ?, ?, ?)').run(group.id, group.name, group.createdAt, group.updatedAt);
           for (const deviceId of group.deviceIds) sqlite.prepare('INSERT INTO group_devices VALUES (?, ?)').run(group.id, deviceId);

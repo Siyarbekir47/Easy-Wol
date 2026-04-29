@@ -28,6 +28,37 @@ function powerTemplate(site: Site, action: PowerAction): string | null {
   return null;
 }
 
+function defaultDevicePowerCommand(device: Device, action: Exclude<PowerAction, 'wake'>): string | null {
+  const custom = action === 'shutdown' ? device.powerShutdownCommand : device.powerRebootCommand;
+  if (custom) return custom;
+
+  if (device.osType === 'windows') {
+    return action === 'shutdown' ? 'shutdown /s /t 0' : 'shutdown /r /t 0';
+  }
+  if (device.osType === 'linux' || device.osType === 'macos') {
+    return action === 'shutdown' ? 'sudo shutdown -h now' : 'sudo reboot';
+  }
+  return null;
+}
+
+function deviceSshTarget(device: Device): Site {
+  return {
+    id: `device:${device.id}`,
+    name: device.name,
+    type: 'ssh',
+    broadcastAddress: '0.0.0.0',
+    sshHost: device.ipAddress,
+    sshPort: device.powerSshPort || 22,
+    sshUser: device.powerSshUser,
+    sshKeyPath: device.powerSshKeyPath,
+    remoteCommand: null,
+    shutdownCommand: null,
+    rebootCommand: null,
+    createdAt: device.createdAt,
+    updatedAt: device.updatedAt
+  };
+}
+
 export function createApp(options: AppOptions) {
   const app = express();
   const localWake = options.localWake ?? sendMagicPacket;
@@ -62,7 +93,15 @@ export function createApp(options: AppOptions) {
       return options.db.createWakeEvent({ deviceId: device.id, siteId: site.id, status: 'success', message: 'Wake command sent' });
     }
 
-    if (site.type !== 'ssh') throw new Error(`${action} requires an SSH relay site`);
+    if (device.powerMethod === 'ssh') {
+      if (!device.powerSshUser || !device.powerSshKeyPath) throw new Error(`${action} requires device SSH user and key`);
+      const command = defaultDevicePowerCommand(device, action);
+      if (!command) throw new Error(`${action} command is not configured for this device OS`);
+      await sshCommand(deviceSshTarget(device), buildSiteCommand(command, site, device));
+      return options.db.createWakeEvent({ deviceId: device.id, siteId: site.id, status: 'success', message: `${action} command sent` });
+    }
+
+    if (site.type !== 'ssh') throw new Error(`${action} requires device SSH power settings or an SSH relay site`);
     const template = powerTemplate(site, action);
     if (!template) throw new Error(`${action} command is not configured for this site`);
     const command = buildSiteCommand(template, site, device);

@@ -22,6 +22,13 @@ export interface Device {
   siteId: string;
   siteName?: string;
   note: string;
+  osType: 'windows' | 'linux' | 'macos' | 'other';
+  powerMethod: 'none' | 'ssh';
+  powerSshUser: string | null;
+  powerSshKeyPath: string | null;
+  powerSshPort: number | null;
+  powerShutdownCommand: string | null;
+  powerRebootCommand: string | null;
 }
 
 export interface WakeEvent {
@@ -150,6 +157,9 @@ export const api = {
   },
   createSchedule(schedule: Partial<Schedule>) {
     return requestJson<Schedule>('/api/schedules', { method: 'POST', body: JSON.stringify(schedule) });
+  },
+  updateSchedule(id: string, schedule: Partial<Schedule>) {
+    return requestJson<Schedule>(`/api/schedules/${id}`, { method: 'PUT', body: JSON.stringify(schedule) });
   },
   deleteSchedule(id: string) {
     return requestJson<void>(`/api/schedules/${id}`, { method: 'DELETE' });
