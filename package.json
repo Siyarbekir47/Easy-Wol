@@ -2,6 +2,7 @@
   "name": "easy-wol",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm:server:dev\" \"vite --host 0.0.0.0\"",

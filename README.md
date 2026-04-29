@@ -325,3 +325,11 @@ Build the image locally:
 ```bash
 docker build -t easy-wol .
 ```
+
+## License
+
+Easy-WoL is released under the MIT License.
+
+You may use, copy, modify, fork, distribute, and use the project commercially. The copyright notice and license text must remain included in copies or substantial portions of the software.
+
+Copyright (c) 2026 Siyarbekir47. See [LICENSE](LICENSE).
