@@ -10,6 +10,8 @@ export interface Site {
   sshUser?: string | null;
   sshKeyPath?: string | null;
   remoteCommand?: string | null;
+  shutdownCommand?: string | null;
+  rebootCommand?: string | null;
 }
 
 export interface Device {
@@ -31,6 +33,22 @@ export interface WakeEvent {
   status: 'success' | 'error';
   message: string;
   createdAt: string;
+}
+
+export interface DeviceGroup {
+  id: string;
+  name: string;
+  deviceIds: string[];
+}
+
+export interface Schedule {
+  id: string;
+  name: string;
+  action: 'wake' | 'shutdown' | 'reboot';
+  timeOfDay: string;
+  enabled: boolean;
+  deviceId: string | null;
+  groupId: string | null;
 }
 
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -65,8 +83,14 @@ export const api = {
   createSite(site: Partial<Site>) {
     return requestJson<Site>('/api/sites', { method: 'POST', body: JSON.stringify(site) });
   },
+  updateSite(id: string, site: Partial<Site>) {
+    return requestJson<Site>(`/api/sites/${id}`, { method: 'PUT', body: JSON.stringify(site) });
+  },
   deleteSite(id: string) {
     return requestJson<void>(`/api/sites/${id}`, { method: 'DELETE' });
+  },
+  testRelay(id: string) {
+    return requestJson<{ ok: boolean; output: string }>(`/api/sites/${id}/test-relay`, { method: 'POST' });
   },
   listDevices() {
     return requestJson<Device[]>('/api/devices');
@@ -74,16 +98,58 @@ export const api = {
   createDevice(device: Partial<Device>) {
     return requestJson<Device>('/api/devices', { method: 'POST', body: JSON.stringify(device) });
   },
+  updateDevice(id: string, device: Partial<Device>) {
+    return requestJson<Device>(`/api/devices/${id}`, { method: 'PUT', body: JSON.stringify(device) });
+  },
   deleteDevice(id: string) {
     return requestJson<void>(`/api/devices/${id}`, { method: 'DELETE' });
   },
   wakeDevice(id: string) {
     return requestJson<{ ok: boolean; event: WakeEvent }>(`/api/devices/${id}/wake`, { method: 'POST' });
   },
+  powerDevice(id: string, action: 'shutdown' | 'reboot') {
+    return requestJson<{ ok: boolean; event: WakeEvent }>(`/api/devices/${id}/power`, { method: 'POST', body: JSON.stringify({ action }) });
+  },
+  deviceEvents(id: string) {
+    return requestJson<WakeEvent[]>(`/api/devices/${id}/events`);
+  },
   deviceStatus(id: string) {
     return requestJson<{ online: boolean }>(`/api/devices/${id}/status`);
   },
   listEvents() {
     return requestJson<WakeEvent[]>('/api/events');
+  },
+  listGroups() {
+    return requestJson<DeviceGroup[]>('/api/groups');
+  },
+  createGroup(group: Partial<DeviceGroup>) {
+    return requestJson<DeviceGroup>('/api/groups', { method: 'POST', body: JSON.stringify(group) });
+  },
+  updateGroup(id: string, group: Partial<DeviceGroup>) {
+    return requestJson<DeviceGroup>(`/api/groups/${id}`, { method: 'PUT', body: JSON.stringify(group) });
+  },
+  deleteGroup(id: string) {
+    return requestJson<void>(`/api/groups/${id}`, { method: 'DELETE' });
+  },
+  wakeGroup(id: string) {
+    return requestJson<{ ok: boolean; events: WakeEvent[] }>(`/api/groups/${id}/wake`, { method: 'POST' });
+  },
+  powerGroup(id: string, action: 'shutdown' | 'reboot') {
+    return requestJson<{ ok: boolean; events: WakeEvent[] }>(`/api/groups/${id}/power`, { method: 'POST', body: JSON.stringify({ action }) });
+  },
+  listSchedules() {
+    return requestJson<Schedule[]>('/api/schedules');
+  },
+  createSchedule(schedule: Partial<Schedule>) {
+    return requestJson<Schedule>('/api/schedules', { method: 'POST', body: JSON.stringify(schedule) });
+  },
+  deleteSchedule(id: string) {
+    return requestJson<void>(`/api/schedules/${id}`, { method: 'DELETE' });
+  },
+  exportBackup() {
+    return requestJson<unknown>('/api/backup');
+  },
+  importBackup(backup: unknown) {
+    return requestJson<{ ok: boolean }>('/api/import', { method: 'POST', body: JSON.stringify(backup) });
   }
 };

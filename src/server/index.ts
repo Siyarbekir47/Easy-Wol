@@ -11,7 +11,7 @@ if (!adminPassword) {
 }
 
 const dbPath = process.env.DB_PATH || '/app/data/easy-wol.sqlite';
-const app = createApp({ db: createDatabase(dbPath), adminPassword });
+const app = createApp({ db: createDatabase(dbPath), adminPassword, enableScheduler: true });
 
 configureStaticServing(app, path.resolve('dist/public'));
 

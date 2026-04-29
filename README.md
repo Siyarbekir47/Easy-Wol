@@ -68,6 +68,29 @@ wakeonlan -i {broadcast} {mac}
 - Die Statuspruefung nutzt TCP-Probes auf typische Ports wie 22, 80 und 3389. Wenn kein Port offen ist, kann ein eingeschalteter PC trotzdem als offline erscheinen.
 - Die App ist fuer LAN/Tailscale gedacht, nicht fuer direktes Internet-Exposure.
 
+## Erweiterte Funktionen
+
+- Standorte und Geraete koennen ueber die Weboberflaeche bearbeitet werden.
+- Gruppen koennen mehrere Geraete zusammen starten oder per SSH-Relay rebooten.
+- Zeitplaene fuehren Wake/Shutdown/Reboot taeglich zur eingestellten Uhrzeit aus.
+- Nach einem Wake prueft die UI automatisch nach 5, 15 und 30 Sekunden den Status.
+- Backup/Restore exportiert und importiert Standorte, Geraete, Gruppen und Zeitplaene als JSON.
+- SSH-Relay-Test prueft, ob der entfernte Sender erreichbar ist.
+
+Shutdown und Reboot sind bewusst nur fuer SSH-Relay-Standorte aktiv. Die Befehle sind Templates und werden auf dem Relay-Host ausgefuehrt:
+
+```bash
+ssh {ip} sudo shutdown -h now
+ssh {ip} sudo reboot
+```
+
+Verfuegbare Platzhalter:
+
+- `{ip}`: IP-Adresse des Zielgeraets
+- `{mac}`: MAC-Adresse des Zielgeraets
+- `{broadcast}`: Broadcast-Adresse des Standorts
+- `{name}`: Geraetename
+
 ## Entwicklung
 
 ```bash
