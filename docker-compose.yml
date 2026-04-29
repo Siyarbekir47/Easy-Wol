@@ -8,7 +8,8 @@ services:
       PORT: "8080"
       ADMIN_PASSWORD: "change-this-password"
       DB_PATH: "/app/data/easy-wol.sqlite"
+      SSH_KEY_DIR: "/app/ssh"
     volumes:
       - ./data:/app/data
-      # Optional: mount the SSH key used for Raspberry Pi wake commands.
-      # - ~/.ssh/id_ed25519:/app/ssh/id_ed25519:ro
+      # Optional: mount a directory containing one or more private SSH keys.
+      # - ~/.ssh:/app/ssh:ro

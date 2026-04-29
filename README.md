@@ -21,7 +21,7 @@ Dann `http://localhost:8080` oeffnen.
 ## Docker auf dunas01
 
 1. Passwort in `docker-compose.yml` setzen.
-2. Optional SSH-Key fuer den Raspberry Pi mounten.
+2. Optional einen Ordner mit SSH-Keys mounten.
 3. Container starten:
 
 ```bash
@@ -39,7 +39,7 @@ sudo apt update
 sudo apt install wakeonlan
 ```
 
-SSH-Key der NAS/Webapp auf dem Pi autorisieren:
+SSH-Key der Webapp auf dem Relay-Host autorisieren:
 
 ```bash
 mkdir -p ~/.ssh
@@ -53,7 +53,7 @@ In Easy-WoL legst du fuer diesen Standort an:
 - Typ: `Remote / Raspberry Pi SSH`
 - SSH Host: Tailscale-IP oder Tailscale-DNS des Pi
 - SSH Benutzer: z. B. `pi`
-- SSH Key im Container: `/app/ssh/id_ed25519`
+- SSH Key: aus der Dropdown-Liste waehlen oder manuellen Pfad wie `/app/ssh/id_ed25519` eintragen
 - Broadcast: z. B. `192.168.50.255`
 
 Der Standardbefehl ist:
@@ -90,6 +90,18 @@ Verfuegbare Platzhalter:
 - `{mac}`: MAC-Adresse des Zielgeraets
 - `{broadcast}`: Broadcast-Adresse des Standorts
 - `{name}`: Geraetename
+
+## Mehrere SSH-Keys
+
+Du kannst einen kompletten Key-Ordner in den Container mounten:
+
+```yaml
+volumes:
+  - ./data:/app/data
+  - ~/.ssh:/app/ssh:ro
+```
+
+Easy-WoL listet private Key-Dateien aus `SSH_KEY_DIR` als Dropdown. Ignoriert werden `.pub`, `known_hosts`, `authorized_keys` und `config`.
 
 ## Entwicklung
 

@@ -5,6 +5,7 @@ import type { Device, EasyWolDatabase, PowerAction, Site } from './db.js';
 import { sendMagicPacket } from './wol.js';
 import { buildSiteCommand, executeSshCommand, wakeViaSsh } from './sshWake.js';
 import { probeTcp } from './status.js';
+import type { SshKeyInfo } from './sshKeys.js';
 
 export interface AppOptions {
   db: EasyWolDatabase;
@@ -12,6 +13,7 @@ export interface AppOptions {
   localWake?: (macAddress: string, broadcastAddress: string) => Promise<void>;
   sshWake?: (site: Site, device: Device) => Promise<string>;
   sshCommand?: (site: Site, command: string) => Promise<string>;
+  sshKeyProvider?: () => SshKeyInfo[];
   enableScheduler?: boolean;
 }
 
@@ -31,6 +33,7 @@ export function createApp(options: AppOptions) {
   const localWake = options.localWake ?? sendMagicPacket;
   const sshWake = options.sshWake ?? wakeViaSsh;
   const sshCommand = options.sshCommand ?? executeSshCommand;
+  const sshKeyProvider = options.sshKeyProvider ?? (() => []);
   const token = crypto.createHash('sha256').update(options.adminPassword).digest('hex');
 
   app.use(express.json({ limit: '2mb' }));
@@ -100,6 +103,7 @@ export function createApp(options: AppOptions) {
   });
 
   app.get('/api/me', requireAuth, (_req, res) => res.json({ authenticated: true }));
+  app.get('/api/ssh-keys', requireAuth, (_req, res) => res.json(sshKeyProvider()));
 
   app.get('/api/sites', requireAuth, (_req, res) => res.json(options.db.listSites()));
   app.post('/api/sites', requireAuth, (req, res) => {

@@ -51,6 +51,11 @@ export interface Schedule {
   groupId: string | null;
 }
 
+export interface SshKeyInfo {
+  name: string;
+  path: string;
+}
+
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     credentials: 'include',
@@ -76,6 +81,9 @@ export const api = {
   },
   logout() {
     return requestJson<{ ok: true }>('/api/logout', { method: 'POST' });
+  },
+  listSshKeys() {
+    return requestJson<SshKeyInfo[]>('/api/ssh-keys');
   },
   listSites() {
     return requestJson<Site[]>('/api/sites');

@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { api, Device, DeviceGroup, Schedule, Site, WakeEvent } from './api';
+import { api, Device, DeviceGroup, Schedule, Site, SshKeyInfo, WakeEvent } from './api';
 import './styles.css';
 
 const emptySite = { name: '', type: 'local', broadcastAddress: '', sshHost: '', sshPort: 22, sshUser: '', sshKeyPath: '/app/ssh/id_ed25519', remoteCommand: 'wakeonlan -i {broadcast} {mac}', shutdownCommand: 'ssh {ip} sudo shutdown -h now', rebootCommand: 'ssh {ip} sudo reboot' };
@@ -16,6 +16,7 @@ export default function App() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [groups, setGroups] = useState<DeviceGroup[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [sshKeys, setSshKeys] = useState<SshKeyInfo[]>([]);
   const [events, setEvents] = useState<WakeEvent[]>([]);
   const [siteForm, setSiteForm] = useState(emptySite);
   const [deviceForm, setDeviceForm] = useState(emptyDevice);
@@ -27,12 +28,13 @@ export default function App() {
   const [message, setMessage] = useState('');
 
   async function refresh() {
-    const [nextSites, nextDevices, nextGroups, nextSchedules, nextEvents] = await Promise.all([api.listSites(), api.listDevices(), api.listGroups(), api.listSchedules(), api.listEvents()]);
+    const [nextSites, nextDevices, nextGroups, nextSchedules, nextEvents, nextSshKeys] = await Promise.all([api.listSites(), api.listDevices(), api.listGroups(), api.listSchedules(), api.listEvents(), api.listSshKeys()]);
     setSites(nextSites);
     setDevices(nextDevices);
     setGroups(nextGroups);
     setSchedules(nextSchedules);
     setEvents(nextEvents);
+    setSshKeys(nextSshKeys);
     setDeviceForm((current) => ({ ...current, siteId: current.siteId || nextSites[0]?.id || '' }));
     setScheduleForm((current) => ({ ...current, deviceId: current.deviceId || nextDevices[0]?.id || '', groupId: current.groupId || '' }));
   }
@@ -266,7 +268,8 @@ export default function App() {
               {siteForm.type === 'ssh' && <>
                 <label>SSH Host<input value={siteForm.sshHost} onChange={(event) => setSiteForm({ ...siteForm, sshHost: event.target.value })} placeholder="100.x.y.z" /></label>
                 <label>SSH Benutzer<input value={siteForm.sshUser} onChange={(event) => setSiteForm({ ...siteForm, sshUser: event.target.value })} placeholder="relay" /></label>
-                <label>SSH Key im Container<input value={siteForm.sshKeyPath} onChange={(event) => setSiteForm({ ...siteForm, sshKeyPath: event.target.value })} /></label>
+                <label>SSH Key<select value={siteForm.sshKeyPath} onChange={(event) => setSiteForm({ ...siteForm, sshKeyPath: event.target.value })}><option value="">Key auswaehlen</option>{sshKeys.map((key) => <option key={key.path} value={key.path}>{key.name}</option>)}<option value={siteForm.sshKeyPath}>Manueller Pfad: {siteForm.sshKeyPath}</option></select></label>
+                <label>Manueller Key-Pfad<input value={siteForm.sshKeyPath} onChange={(event) => setSiteForm({ ...siteForm, sshKeyPath: event.target.value })} placeholder="/app/ssh/id_ed25519" /></label>
                 <label>Shutdown-Befehl<input value={siteForm.shutdownCommand} onChange={(event) => setSiteForm({ ...siteForm, shutdownCommand: event.target.value })} /></label>
                 <label>Reboot-Befehl<input value={siteForm.rebootCommand} onChange={(event) => setSiteForm({ ...siteForm, rebootCommand: event.target.value })} /></label>
               </>}
