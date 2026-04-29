@@ -96,6 +96,15 @@ export default function App() {
     }
   }
 
+  async function deleteSite(site: Site) {
+    const confirmed = window.confirm(
+      `Standort "${site.name}" wirklich loeschen?\n\nAlle zugeordneten Geraete und Wake-Events werden ebenfalls entfernt.`
+    );
+    if (!confirmed) return;
+    await api.deleteSite(site.id);
+    await refresh();
+  }
+
   if (!authenticated) {
     return (
       <main className="login-shell">
@@ -103,7 +112,7 @@ export default function App() {
           <div className="brand-mark">EW</div>
           <p className="eyebrow">Multi-Site Wake Control</p>
           <h1>Easy-WoL</h1>
-          <p className="muted">Ein zentraler Startknopf fuer PCs in mehreren Netzwerken. NAS lokal, Raspberry Pi remote per Tailscale/SSH.</p>
+          <p className="muted">Ein zentraler Startknopf fuer Geraete in mehreren Netzwerken. Lokale Standorte senden direkt, entfernte Standorte nutzen einen SSH-faehigen Relay-Host.</p>
           <form onSubmit={login} className="stack-form">
             <label>Admin-Passwort<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoFocus /></label>
             <button className="primary" type="submit">Control Center oeffnen</button>
@@ -119,8 +128,8 @@ export default function App() {
       <header className="hero">
         <div>
           <p className="eyebrow">Easy-WoL Control Center</p>
-          <h1>Standorte starten, ohne Router-Gefummel.</h1>
-          <p className="muted">Magic Packets werden immer dort erzeugt, wo sie funktionieren: lokal auf der NAS oder remote auf dem Raspberry Pi.</p>
+          <h1>Wake-on-LAN fuer mehrere Netzwerke.</h1>
+          <p className="muted">Magic Packets werden am passenden Standort erzeugt: direkt im lokalen Netz oder ueber einen erreichbaren SSH-Relay im Zielnetz.</p>
         </div>
         <div className="hero-stats">
           <span><strong>{sites.length}</strong> Standorte</span>
@@ -138,11 +147,11 @@ export default function App() {
             <section className="site-panel" key={site.id}>
               <div className="site-header">
                 <div>
-                  <p className="eyebrow">{site.type === 'local' ? 'NAS Netzwerk' : 'Raspberry Pi / SSH'}</p>
+                  <p className="eyebrow">{site.type === 'local' ? 'Lokaler Sender' : 'SSH Relay'}</p>
                   <h2>{site.name}</h2>
                   <p>{site.broadcastAddress}{site.sshHost ? ` · ${site.sshUser}@${site.sshHost}:${site.sshPort || 22}` : ''}</p>
                 </div>
-                <button className="ghost danger" onClick={() => api.deleteSite(site.id).then(refresh)}>Standort loeschen</button>
+                <button className="ghost danger" onClick={() => deleteSite(site)}>Standort loeschen</button>
               </div>
 
               <div className="device-list">
@@ -174,8 +183,8 @@ export default function App() {
           <section className="form-card">
             <h2>Standort</h2>
             <form onSubmit={createSite} className="stack-form">
-              <label>Name<input value={siteForm.name} onChange={(event) => setSiteForm({ ...siteForm, name: event.target.value })} placeholder="NAS Zuhause" /></label>
-              <label>Typ<select value={siteForm.type} onChange={(event) => setSiteForm({ ...siteForm, type: event.target.value as 'local' | 'ssh' })}><option value="local">Lokal / NAS</option><option value="ssh">Remote / Raspberry Pi SSH</option></select></label>
+              <label>Name<input value={siteForm.name} onChange={(event) => setSiteForm({ ...siteForm, name: event.target.value })} placeholder="Buero Standort" /></label>
+              <label>Typ<select value={siteForm.type} onChange={(event) => setSiteForm({ ...siteForm, type: event.target.value as 'local' | 'ssh' })}><option value="local">Lokal senden</option><option value="ssh">Remote per SSH Relay</option></select></label>
               <label>Broadcast<input value={siteForm.broadcastAddress} onChange={(event) => setSiteForm({ ...siteForm, broadcastAddress: event.target.value })} placeholder="192.168.1.255" /></label>
               {siteForm.type === 'ssh' && <>
                 <label>SSH Host<input value={siteForm.sshHost} onChange={(event) => setSiteForm({ ...siteForm, sshHost: event.target.value })} placeholder="100.x.y.z" /></label>
