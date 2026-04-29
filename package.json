@@ -1,0 +1,39 @@
+{
+  "name": "easy-wol",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm:server:dev\" \"vite --host 0.0.0.0\"",
+    "server:dev": "tsx watch src/server/index.ts",
+    "build": "tsc -p tsconfig.json && vite build",
+    "start": "node dist/server/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "better-sqlite3": "latest",
+    "cookie-parser": "latest",
+    "express": "latest",
+    "nanoid": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "ssh2": "latest",
+    "vite": "latest"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "latest",
+    "@types/cookie-parser": "latest",
+    "@types/express": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/ssh2": "latest",
+    "@types/supertest": "latest",
+    "concurrently": "latest",
+    "supertest": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}
