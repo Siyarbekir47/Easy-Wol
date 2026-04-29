@@ -1,0 +1,14 @@
+services:
+  easy-wol:
+    build: .
+    container_name: easy-wol
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      PORT: "8080"
+      ADMIN_PASSWORD: "change-this-password"
+      DB_PATH: "/app/data/easy-wol.sqlite"
+    volumes:
+      - ./data:/app/data
+      # Optional: mount the SSH key used for Raspberry Pi wake commands.
+      # - ~/.ssh/id_ed25519:/app/ssh/id_ed25519:ro

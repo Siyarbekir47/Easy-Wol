@@ -13,6 +13,11 @@ export interface AppOptions {
   sshWake?: (site: Site, device: Device) => Promise<string>;
 }
 
+function param(value: string | string[] | undefined): string {
+  if (typeof value !== 'string') throw new Error('Invalid route parameter');
+  return value;
+}
+
 export function createApp(options: AppOptions) {
   const app = express();
   const localWake = options.localWake ?? sendMagicPacket;
@@ -61,13 +66,13 @@ export function createApp(options: AppOptions) {
   });
   app.put('/api/sites/:id', requireAuth, (req, res) => {
     try {
-      res.json(options.db.updateSite(req.params.id, req.body));
+      res.json(options.db.updateSite(param(req.params.id), req.body));
     } catch (error) {
       handleError(res, error);
     }
   });
   app.delete('/api/sites/:id', requireAuth, (req, res) => {
-    options.db.deleteSite(req.params.id);
+    options.db.deleteSite(param(req.params.id));
     res.status(204).end();
   });
 
@@ -81,18 +86,18 @@ export function createApp(options: AppOptions) {
   });
   app.put('/api/devices/:id', requireAuth, (req, res) => {
     try {
-      res.json(options.db.updateDevice(req.params.id, req.body));
+      res.json(options.db.updateDevice(param(req.params.id), req.body));
     } catch (error) {
       handleError(res, error);
     }
   });
   app.delete('/api/devices/:id', requireAuth, (req, res) => {
-    options.db.deleteDevice(req.params.id);
+    options.db.deleteDevice(param(req.params.id));
     res.status(204).end();
   });
 
   app.post('/api/devices/:id/wake', requireAuth, async (req, res) => {
-    const device = options.db.getDevice(req.params.id);
+    const device = options.db.getDevice(param(req.params.id));
     if (!device) {
       res.status(404).json({ error: 'Device not found' });
       return;
@@ -116,7 +121,7 @@ export function createApp(options: AppOptions) {
   });
 
   app.get('/api/devices/:id/status', requireAuth, async (req, res) => {
-    const device = options.db.getDevice(req.params.id);
+    const device = options.db.getDevice(param(req.params.id));
     if (!device) {
       res.status(404).json({ error: 'Device not found' });
       return;

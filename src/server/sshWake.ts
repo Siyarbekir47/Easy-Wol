@@ -11,8 +11,11 @@ export async function wakeViaSsh(site: Site, device: Device): Promise<string> {
     throw new Error('SSH site is missing host, user, or key path');
   }
 
+  const sshHost = site.sshHost;
+  const sshUser = site.sshUser;
+  const sshKeyPath = site.sshKeyPath;
   const command = buildWakeCommand(site.remoteCommand || 'wakeonlan -i {broadcast} {mac}', site, device);
-  const privateKey = fs.readFileSync(site.sshKeyPath, 'utf8');
+  const privateKey = fs.readFileSync(sshKeyPath, 'utf8');
   const client = new Client();
 
   return await new Promise<string>((resolve, reject) => {
@@ -40,6 +43,7 @@ export async function wakeViaSsh(site: Site, device: Device): Promise<string> {
         });
       })
       .on('error', reject)
-      .connect({ host: site.sshHost, port: site.sshPort || 22, username: site.sshUser, privateKey, readyTimeout: 10000 });
+      .connect({ host: sshHost, port: site.sshPort || 22, username: sshUser, privateKey, readyTimeout: 10000 });
   });
 }
+
